@@ -1,0 +1,189 @@
+[root@logio ~]# cat /etc/redhat-release
+[root@logio ~]# yum update -y
+[root@logio ~]# yum clean all
+[root@logio ~]# timedatectl set-timezone Asia/Kolkata
+[root@logio ~]# date
+[root@logio ~]# sestatus
+
+[root@logio ~]# vi /etc/selinux/config
+SELINUX=disabled
+
+[root@logio ~]# reboot
+[root@logio ~]# useradd elkuser
+[root@logio ~]# passwd elkuser
+[root@logio ~]# gpasswd -a elkuser wheel
+[root@logio ~]# su - elkuser
+
+[elkuser@logio ~]$ whoami
+
+[elkuser@logio ~]$ sudo yum install java -y
+[elkuser@logio ~]$ java -version
+
+############################################################################################
+# Another method of installing java version..
+[root@logio tmp]# curl --insecure --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" -L "http://download.oracle.com/otn-pub/java/jdk/8u77-b02/jdk-8u77-linux-x64.rpm" > jdk-8u77-linux-x64.rpm
+
+[root@logio tmp]# yum -y localinstall jdk-8u73-linux-x64.rpm
+
+############################################################################################
+
+[elkuser@logio ~]$ sudo rpm --import http://packages.elastic.co/GPG-KEY-elasticsearch
+[elkuser@logio ~]$ sudo vi /etc/yum.repos.d/elasticsearch.repo
+
+[elasticsearch-2.x]
+name=Elasticsearch repository for 2.x packages
+baseurl=http://packages.elastic.co/elasticsearch/2.x/centos
+gpgcheck=1
+gpgkey=http://packages.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+ 
+[elkuser@logio ~]$ sudo yum -y install elasticsearch
+[elkuser@logio ~]$ sudo vi /etc/elasticsearch/elasticsearch.yml
+
+network.host: localhost
+
+[elkuser@logio ~]$ sudo systemctl start elasticsearch
+[elkuser@logio ~]$ sudo systemctl enable elasticsearch
+
+[root@logio ~]# curl  http://localhost:9200
+{
+  "name" : "Bereet",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "l3YIVfOiQFeuRDv_DX1v4g",
+  "version" : {
+    "number" : "2.4.6",
+    "build_hash" : "5376dca9f70f3abef96a77f4bb22720ace8240fd",
+    "build_timestamp" : "2017-07-18T12:17:44Z",
+    "build_snapshot" : false,
+    "lucene_version" : "5.5.4"
+  },
+  "tagline" : "You Know, for Search"
+}
+
+[elkuser@logio ~]$ sudo vi /etc/yum.repos.d/kibana.repo
+
+[kibana-4.4]
+name=Kibana repository for 4.4.x packages
+baseurl=http://packages.elastic.co/kibana/4.4/centos
+gpgcheck=1
+gpgkey=http://packages.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+
+[elkuser@logio ~]$ sudo yum -y install kibana
+[elkuser@logio ~]$ sudo vi /opt/kibana/config/kibana.yml
+
+server.host: "localhost"
+#server.port: 5601
+#elasticsearch.url: "http://localhost:9200"
+
+[elkuser@logio ~]$ sudo systemctl start kibana
+[elkuser@logio ~]$ sudo chkconfig kibana on
+
+
+[elkuser@logio ~]$ sudo yum -y install epel-release
+[elkuser@logio ~]$ sudo yum -y install nginx httpd-tools
+[elkuser@logio ~]$ sudo htpasswd -c /etc/nginx/htpasswd.users kibanaadmin
+[elkuser@logio ~]$ sudo vi /etc/nginx/nginx.conf
+
+Find the default server block (starts with server {), the last configuration block in the file, and delete it. When you are done, the last two lines in the file should look like this:
+last two lines would look like..below..
+
+    include /etc/nginx/conf.d/*.conf;
+}
+
+[elkuser@logio ~]$ sudo vi /etc/nginx/conf.d/kibana.conf
+
+server {
+    listen 80;
+
+    server_name example.com;
+
+    auth_basic "Restricted Access";
+    auth_basic_user_file /etc/nginx/htpasswd.users;
+
+    location / {
+        proxy_pass http://localhost:5601;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+[elkuser@logio ~]$ sudo systemctl start nginx
+[elkuser@logio ~]$ sudo systemctl enable nginx
+[elkuser@logio ~]$ sudo vi /etc/yum.repos.d/logstash.repo
+
+[logstash-2.2]
+name=logstash repository for 2.2 packages
+baseurl=http://packages.elasticsearch.org/logstash/2.2/centos
+gpgcheck=1
+gpgkey=http://packages.elasticsearch.org/GPG-KEY-elasticsearch
+enabled=1
+~
+[elkuser@logio ~]$ sudo yum -y install logstash
+[elkuser@logio ~]$ cd /etc/pki/tls
+[elkuser@logio ~]$ sudo openssl req -subj '/CN=logio.cloudocean.guru/' -x509 -days 3650 -batch -nodes -newkey rsa:2048 -keyout private/logstash-forwarder.key -out certs/logstash-forwarder.crt
+  
+[elkuser@logio ~]$ sudo vi /etc/logstash/conf.d/02-beats-input.conf
+
+input {
+  beats {
+    port => 5044
+    ssl => true
+    ssl_certificate => "/etc/pki/tls/certs/logstash-forwarder.crt"
+    ssl_key => "/etc/pki/tls/private/logstash-forwarder.key"
+  }
+}
+
+
+[elkuser@logio ~]$ sudo vi /etc/logstash/conf.d/10-syslog-filter.conf
+
+filter {
+  if [type] == "syslog" {
+    grok {
+      match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+      add_field => [ "received_at", "%{@timestamp}" ]
+      add_field => [ "received_from", "%{host}" ]
+    }
+    syslog_pri { }
+    date {
+      match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+    }
+  }
+}
+
+[elkuser@logio ~]$ sudo vi /etc/logstash/conf.d/30-elasticsearch-output.conf
+
+output {
+  elasticsearch {
+    hosts => ["localhost:9200"]
+    sniffing => true
+    manage_template => false
+    index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
+    document_type => "%{[@metadata][type]}"
+  }
+}
+
+[elkuser@logio ~]$ sudo service logstash configtest
+[elkuser@logio ~]$ sudo systemctl restart logstash
+[elkuser@logio ~]$ sudo chkconfig logstash on
+
+[elkuser@logio ~]$ cd ~
+[elkuser@logio ~]$ curl -L -O https://download.elastic.co/beats/dashboards/beats-dashboards-1.1.0.zip
+[elkuser@logio ~]$ sudo yum -y install unzip
+[elkuser@logio ~]$ cd beats-dashboards-*
+[elkuser@logio ~]$ ./load.sh
+
+This command has to be run once the client is connected and configured..
+[elkuser@logio ~]$ cd ~
+[elkuser@logio ~]$ curl -O https://gist.githubusercontent.com/thisismitch/3429023e8438cc25b86c/raw/d8c479e2a1adcea8b1fe86570e42abab0f10f364/filebeat-index-template.json
+[elkuser@logio ~]$ curl -XPUT 'http://localhost:9200/_template/filebeat?pretty' -d@filebeat-index-template.json
+
+This is copy the cert to client machine. we can also zip the file and send over email.
+
+[elkuser@logio ~]$ scp /etc/pki/tls/certs/logstash-forwarder.crt root@v4.cloudocean.guru:/tmp
+
+
+
