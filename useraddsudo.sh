@@ -4,7 +4,7 @@ yum update –y
 yum clean all 
 cat /etc/Redhat-release
 timedatectl set-timezone ‘Asia/Kolkata’
-yum -y install sudo wget curl
+yum -y install sudo wget curl openssl git
 read -p "Enter your new user for elkclient: " USERNAME
 read -p "Enter your new user password: " PASSWORD
 
