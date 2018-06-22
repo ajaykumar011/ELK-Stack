@@ -1,5 +1,6 @@
 #!/bin/bash
-echo " RUN THIS SCRIPT FROM the downloaded location of git"
+yum -y -q install git curl wget openssl
+echo "RUN THIS SCRIPT FROM the downloaded location of git"
 echo “your current directory is: ”
 pwd
 
@@ -15,7 +16,7 @@ echo enabled=1 >> /etc/yum.repos.d/elastic-beats.repo
 echo gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch >> /etc/yum.repos.d/elastic-beats.repo
 echo gpgcheck=1 >> /etc/yum.repos.d/elastic-beats.repo
 
-sudo yum -y install filebeat
+sudo yum -y -q install filebeat
 sudo scp elkuser@logio.cloudocean.guru:/etc/pki/tls/certs/logstash-forwarder.crt /tmp
 sudo cp /tmp/logstash-forwarder.crt /etc/pki/tls/certs/
 cp filebeat.yml /etc/filebeat/
