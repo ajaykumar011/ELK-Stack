@@ -1,6 +1,8 @@
 #!/bin/bash
-echo “your current directly is: ”
+echo " RUN THIS SCRIP FROM the downloaed location of git"
+echo “your current directory is: ”
 pwd
+
 echo " Current user"
 who am i
 sudo rpm --import http://packages.elastic.co/GPG-KEY-elasticsearch
