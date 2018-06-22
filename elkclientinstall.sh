@@ -6,6 +6,7 @@ pwd
 echo "--------------------Current user--------------------------"
 who am i
 echo "--------------------Installation Starts--------------------"
+rm -rf /etc/yum.repos.d/elastic-beats.repo
 sudo rpm --import http://packages.elastic.co/GPG-KEY-elasticsearch
 echo [beats] >>/etc/yum.repos.d/elastic-beats.repo
 echo name=Elastic Beats Repository >> /etc/yum.repos.d/elastic-beats.repo
