@@ -3,17 +3,16 @@ echo " RUN THIS SCRIP FROM the downloaed location of git"
 echo “your current directory is: ”
 pwd
 
-echo " Current user"
+echo "--------------------Current user--------------------------"
 who am i
 sudo rpm --import http://packages.elastic.co/GPG-KEY-elasticsearch
-sudo cat <<EOF >/etc/yum.repos.d/elastic-beats.repo
-[beats]
-name=Elastic Beats Repository
-baseurl=https://packages.elastic.co/beats/yum/el/$basearch
-enabled=1
-gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
-gpgcheck=1
-EOF
+echo [beats] >>/etc/yum.repos.d/elastic-beats.repo
+echo name=Elastic Beats Repository >> /etc/yum.repos.d/elastic-beats.repo
+echo baseurl=https://packages.elastic.co/beats/yum/el/$basearch >> /etc/yum.repos.d/elastic-beats.repo
+echo enabled=1 >> /etc/yum.repos.d/elastic-beats.repo
+echo gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch >> /etc/yum.repos.d/elastic-beats.repo
+echo gpgcheck=1 >> /etc/yum.repos.d/elastic-beats.repo
+
 sudo yum -y install filebeat
 cd ~
 sudo scp elkuser@logio.cloudocean.guru:/etc/pki/tls/certs/logstash-forwarder.crt /tmp
