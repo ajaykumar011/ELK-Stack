@@ -20,5 +20,8 @@ else
         echo "user successfully created"
 
 fi
-echo " Great you're ready to go with new user"
+echo "Great you're ready to go with new user"
+echo "Here is the passwd string for you"
+echo "-----------------------------------------------------------------------------"
 cat /etc/passwd | grep $USERNAME
+echo "-----------------------------------------------------------------------------"
