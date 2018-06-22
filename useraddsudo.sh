@@ -1,7 +1,7 @@
 #!/bin/bash
 
-yum update –y
-yum clean all 
+#yum update –y
+#yum clean all 
 cat /etc/Redhat-release
 timedatectl set-timezone ‘Asia/Kolkata’
 yum -y install sudo wget curl openssl git finger
@@ -28,3 +28,4 @@ echo "--------------------------------------------------------------------------
 id $USERNAME
 ehco "-----------------------------------------------------------------------------"
 finger $USERNAME
+echo "Thank you............................."
