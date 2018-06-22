@@ -17,7 +17,5 @@ else
         echo "user successfully created"
 
 fi
-
-su - $USERNAME
-whoami
-
+echo " Great you're ready to go with new user"
+cat /etc/passwd | grep $USERNAME
