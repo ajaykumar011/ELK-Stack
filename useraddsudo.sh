@@ -5,11 +5,14 @@ yum clean all
 cat /etc/Redhat-release
 timedatectl set-timezone ‘Asia/Kolkata’
 yum -y install sudo wget curl openssl git
+clear
+echo "########################################################################"
 read -p "Enter your new user for elkclient: " USERNAME
 read -p "Enter your new user password: " PASSWORD
-
+echo "########################################################################"
 if [ $(getent passwd $USERNAME) ] ; then
         echo user $USERNAME exists, quiting the program
+        sleep 3s
         exit 1
 else
         echo user $USERNAME doesn\'t exists, creating a sudo user for you..
