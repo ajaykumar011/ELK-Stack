@@ -1,10 +1,11 @@
 #!/bin/bash
-echo " RUN THIS SCRIP FROM the downloaed location of git"
+echo " RUN THIS SCRIPT FROM the downloaded location of git"
 echo “your current directory is: ”
 pwd
 
 echo "--------------------Current user--------------------------"
 who am i
+echo "--------------------Installation Starts--------------------"
 sudo rpm --import http://packages.elastic.co/GPG-KEY-elasticsearch
 echo [beats] >>/etc/yum.repos.d/elastic-beats.repo
 echo name=Elastic Beats Repository >> /etc/yum.repos.d/elastic-beats.repo
