@@ -31,12 +31,12 @@ sudo apt-get install nginx apache2-utils
 
 sudo htpasswd -c /etc/nginx/htpasswd.users kibanaadmin
 sudo vi /etc/nginx/sites-available/default
-#delete all the contents and add these lines only..
+#delete all the contents and add these lines only.. also change the server name in server_name parameter.
 ###################################################################
 server {
     listen 80;
 
-    server_name example.com;
+    server_name logio.cloudocean.guru;
 
     auth_basic "Restricted Access";
     auth_basic_user_file /etc/nginx/htpasswd.users;
