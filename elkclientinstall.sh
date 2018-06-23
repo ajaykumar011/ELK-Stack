@@ -1,4 +1,5 @@
 #!/bin/bash
+#this configuration is tested on Centos7 Setup.
 yum -y -q install git curl wget openssl
 echo "RUN THIS SCRIPT FROM the downloaded location of git"
 echo “your current directory is: ”
