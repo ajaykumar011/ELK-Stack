@@ -19,6 +19,8 @@ echo gpgcheck=1 >> /etc/yum.repos.d/elastic-beats.repo
 sudo yum -y -q install filebeat
 sudo scp elkuser@logio.cloudocean.guru:/etc/pki/tls/certs/logstash-forwarder.crt /tmp
 sudo cp /tmp/logstash-forwarder.crt /etc/pki/tls/certs/
+cd ~
+curl -O https://github.com/ajaykumar011/elkclient/blob/master/filebeat.yml
 cp filebeat.yml /etc/filebeat/
 sudo systemctl start filebeat
 sudo systemctl enable filebeat
